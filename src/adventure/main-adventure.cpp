@@ -2,6 +2,7 @@
 // Updated by Seth Cooper
 // Please do not redistribute without asking permission.
 
+#include "base/BehaviorTree.hpp"
 #include "base/GameObject.hpp"
 #include "base/GenericComponent.hpp"
 #include "base/InputManager.hpp"
@@ -12,6 +13,7 @@
 #include "base/SDLGraphicsProgram.hpp"
 #include "base/StateComponent.hpp"
 #include "base/StatesAndTransitions.hpp"
+
 #include <memory>
 
 static const int TAG_PLAYER = 1;
@@ -115,18 +117,15 @@ public:
     }
 };
 
-class AdvWanderEnemy : public GameObject {
+class AdvTestEnemy : public GameObject {
 public:
-    AdvWanderEnemy(float x, float y)
+    AdvTestEnemy(float x, float y)
         : GameObject(x, y, SIZE, SIZE, TAG_ENEMY)
     {
-        std::shared_ptr<StateComponent::State> wanderState = std::make_shared<WanderState>(3.0f);
+        std::shared_ptr<BehaviorTree> bt = std::make_shared<BehaviorTree>(*this);
 
-        std::shared_ptr<StateComponent> sc = std::make_shared<StateComponent>(*this);
+        addGenericCompenent(bt);
 
-        sc->setStartState(wanderState);
-
-        addGenericCompenent(sc);
         addGenericCompenent(std::make_shared<RemoveOnCollideComponent>(*this, TAG_PLAYER));
         setPhysicsCompenent(std::make_shared<PhysicsComponent>(*this, false));
         setRenderCompenent(std::make_shared<RectRenderComponent>(*this, 0xdd, 0x22, 0x22));
@@ -141,7 +140,7 @@ int main(int argc, char** argv)
     level->addObject(player);
     level->addObject(std::make_shared<AdvGoal>(18 * SIZE, 18 * SIZE));
     level->addObject(std::make_shared<AdvEnemy>(2 * SIZE, 17 * SIZE, player));
-    level->addObject(std::make_shared<AdvWanderEnemy>(2 * SIZE, 10 * SIZE));
+    level->addObject(std::make_shared<AdvTestEnemy>(2 * SIZE, 10 * SIZE));
     for (int ii = 0; ii < 10; ++ii) {
         level->addObject(std::make_shared<AdvBlock>((14 - ii) * SIZE, (ii + 5) * SIZE));
     }
