@@ -180,7 +180,7 @@ public:
 
         Uint32 currentTime = SDL_GetTicks();
         Uint32 elapsedTime = currentTime - mStartTime;
-        if (elapsedTime >= mDuration || isNear(self, mBlackboard->getPlayerPtr()->x(), mBlackboard->getPlayerPtr()->y(), SIZE * 2.5f)) {
+        if (elapsedTime >= mDuration || isNear(self, mBlackboard->getPlayerPtr()->x(), mBlackboard->getPlayerPtr()->y(), SIZE * 3.5f)) {
             *isSleeping = false;
             return Status::SUCCESS;
         } else {
@@ -201,6 +201,11 @@ public:
         , mSpeed(speed)
         , mWhich(which)
     {
+    }
+
+    virtual void onEnter() override
+    {
+        self.setRenderCompenent(std::make_shared<RectRenderComponent>(self, 0xdd, 0x22, 0x22));
     }
 
     virtual Status update() override

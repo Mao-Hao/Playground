@@ -105,7 +105,7 @@ public:
         isSleeping = true;
         mData = &isSleeping;
 
-        std::shared_ptr<SleepAction> sleepAction = std::make_shared<SleepAction>(*this, 1000);
+        std::shared_ptr<SleepAction> sleepAction = std::make_shared<SleepAction>(*this, 1000 * 30);
         std::shared_ptr<Inverter> inverter = std::make_shared<Inverter>(sleepAction);
 
         std::shared_ptr<ChaseAction> chaseAction = std::make_shared<ChaseAction>(*this, 6.0f, player);
@@ -119,7 +119,7 @@ public:
         addGenericCompenent(bt);
 
         setPhysicsCompenent(std::make_shared<PhysicsComponent>(*this, true));
-        setRenderCompenent(std::make_shared<RectRenderComponent>(*this, 0xdd, 0x22, 0x22));
+        setRenderCompenent(std::make_shared<RectRenderComponent>(*this, 0xdd, 0xdd, 0xdd));
     }
 };
 
@@ -143,7 +143,7 @@ public:
 
         // second level of the tree
         std::shared_ptr<Selector> rushSelector = std::make_shared<Selector>();
-        std::shared_ptr<RushAction> rushAction = std::make_shared<RushAction>(*this, 3 * 6.0f);
+        std::shared_ptr<RushAction> rushAction = std::make_shared<RushAction>(*this, 3.5 * 6.0f);
         rushSequence->addChild(rushSelector);
         rushSequence->addChild(rushAction);
 
@@ -154,8 +154,8 @@ public:
         rushSelector->addChild(rushSequence1);
 
         // fourth level of the tree
-        std::shared_ptr<RushDetectNearbyAction> detectNearbyAction = std::make_shared<RushDetectNearbyAction>(*this, SIZE * 10.0f);
-        std::shared_ptr<RushWaitAction> waitAction = std::make_shared<RushWaitAction>(*this, 1000);
+        std::shared_ptr<RushDetectNearbyAction> detectNearbyAction = std::make_shared<RushDetectNearbyAction>(*this, SIZE * 7.0f);
+        std::shared_ptr<RushWaitAction> waitAction = std::make_shared<RushWaitAction>(*this, 1500);
         rushSequence1->addChild(detectNearbyAction);
         rushSequence1->addChild(waitAction);
 
@@ -169,17 +169,30 @@ int main(int argc, char** argv)
 {
     std::shared_ptr<Level> level = std::make_shared<Level>(30 * SIZE, 30 * SIZE);
 
-    std::shared_ptr<AdvPlayer> player = std::make_shared<AdvPlayer>(15 * SIZE, 15 * SIZE);
+    std::shared_ptr<AdvPlayer> player = std::make_shared<AdvPlayer>(14 * SIZE, 14 * SIZE);
 
     Blackboard::getInstance()->setPlayer(player);
 
     level->addObject(player);
-    // level->addObject(std::make_shared<AdvGoal>(18 * SIZE, 18 * SIZE));
-    // level->addObject(std::make_shared<SleepEnemy>(5 * SIZE, 25 * SIZE, player));
-    level->addObject(std::make_shared<RushEnemy>(5 * SIZE, 5 * SIZE));
-    level->addObject(std::make_shared<RushEnemy>(5 * SIZE, 25 * SIZE));
-    level->addObject(std::make_shared<RushEnemy>(25 * SIZE, 5 * SIZE));
-    level->addObject(std::make_shared<RushEnemy>(25 * SIZE, 25 * SIZE));
+    level->addObject(std::make_shared<AdvGoal>(9 * SIZE, 9 * SIZE));
+    level->addObject(std::make_shared<AdvGoal>(9 * SIZE, 19 * SIZE));
+    level->addObject(std::make_shared<AdvGoal>(19 * SIZE, 19 * SIZE));
+    level->addObject(std::make_shared<AdvGoal>(19 * SIZE, 9 * SIZE));
+
+    level->addObject(std::make_shared<AdvGoal>(4 * SIZE, 14 * SIZE));
+    level->addObject(std::make_shared<AdvGoal>(14 * SIZE, 4 * SIZE));
+    level->addObject(std::make_shared<AdvGoal>(14 * SIZE, 24 * SIZE));
+    level->addObject(std::make_shared<AdvGoal>(24 * SIZE, 14 * SIZE));
+
+    level->addObject(std::make_shared<RushEnemy>(4 * SIZE, 4 * SIZE));
+    level->addObject(std::make_shared<RushEnemy>(4 * SIZE, 24 * SIZE));
+    level->addObject(std::make_shared<RushEnemy>(24 * SIZE, 4 * SIZE));
+    level->addObject(std::make_shared<RushEnemy>(24 * SIZE, 24 * SIZE));
+
+    level->addObject(std::make_shared<SleepEnemy>(0 * SIZE, 0 * SIZE, player));
+    level->addObject(std::make_shared<SleepEnemy>(29 * SIZE, 0 * SIZE, player));
+    level->addObject(std::make_shared<SleepEnemy>(0 * SIZE, 29 * SIZE, player));
+    level->addObject(std::make_shared<SleepEnemy>(29 * SIZE, 29 * SIZE, player));
 
     SDLGraphicsProgram mySDLGraphicsProgram(level);
 
