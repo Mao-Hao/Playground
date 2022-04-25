@@ -1,12 +1,8 @@
 ## executables
-EXES=bin/adventure/main-adventure bin/jump/main-jump
-run-adventure: bin/adventure/main-adventure
+EXES=bin/avoid/main-avoid
+run-avoid: bin/avoid/main-avoid
 	$<
-run-jump: bin/jump/main-jump
-	$<
-run-adventure_d: bin/adventure/main-adventure_d
-	$<
-run-jump_d: bin/jump/main-jump_d
+run-avoid_d: bin/avoid/main-avoid_d
 	$<
 
 

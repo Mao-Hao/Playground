@@ -30,8 +30,18 @@ public:
 
     std::shared_ptr<GameObject> getPlayerPtr() const { return mPlayerPtr; }
 
+    void setRushXY(int x, int y)
+    {
+        mRushX = x;
+        mRushY = y;
+    }
+
+    float getRushX() const { return mRushX; }
+    float getRushY() const { return mRushY; }
+
 private:
     std::shared_ptr<GameObject> mPlayerPtr = nullptr;
+    float mRushX, mRushY;
 };
 
 enum class Status {
@@ -77,6 +87,11 @@ public:
     bool isRunning() const { return mStatus == Status::RUNNING; }
     bool isExit() const { return mStatus == Status::SUCCESS || mStatus == Status::FAILURE; }
     Status getStatus() const { return mStatus; }
+    void abort()
+    {
+        onExit();
+        mStatus = Status::ABORTED;
+    }
 
     Blackboard* mBlackboard;
 };
@@ -228,7 +243,7 @@ class RandomSequence : public Sequence {
 
 // Or
 class Selector : public Composite {
-protected:
+public:
     std::vector<std::shared_ptr<BehaviorNode>>::iterator mCurrentChild;
 
     virtual void onEnter() override
@@ -269,7 +284,61 @@ class ActiveSelector : public Selector {
 };
 
 class Parallel : public Composite {
-    // TODO:
+public:
+    enum class Policy {
+        RequireOne,
+        RequireAll
+    };
+
+    Parallel(Policy success, Policy failure)
+        : mSuccessPolicy(success)
+        , mFailurePolicy(failure)
+    {
+    }
+
+    virtual ~Parallel() { }
+
+protected:
+    Policy mSuccessPolicy;
+    Policy mFailurePolicy;
+
+    virtual Status update() override
+    {
+        size_t successCount = 0;
+        size_t failureCount = 0;
+
+        for (auto child : mChildren) {
+            if (!child->isExit())
+                child->tick();
+
+            if (child->getStatus() == Status::SUCCESS) {
+                ++successCount;
+                if (mSuccessPolicy == Policy::RequireOne)
+                    return Status::SUCCESS;
+            }
+
+            if (child->getStatus() == Status::FAILURE) {
+                ++failureCount;
+                if (mFailurePolicy == Policy::RequireOne)
+                    return Status::FAILURE;
+            }
+        }
+
+        if (mFailurePolicy == Policy::RequireAll && failureCount == mChildren.size())
+            return Status::FAILURE;
+
+        if (mSuccessPolicy == Policy::RequireAll && successCount == mChildren.size())
+            return Status::SUCCESS;
+
+        return Status::RUNNING;
+    }
+
+    virtual void onExit() override
+    {
+        for (auto child : mChildren)
+            if (child->isRunning())
+                child->abort();
+    }
 };
 
 class Monitor : public Parallel {

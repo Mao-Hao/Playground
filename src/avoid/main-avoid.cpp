@@ -2,7 +2,7 @@
 // Updated by Seth Cooper
 // Please do not redistribute without asking permission.
 
-#include "AdvActions.hpp"
+#include "Actions.hpp"
 #include "base/BehaviorTree.hpp"
 #include "base/GameObject.hpp"
 #include "base/GenericComponent.hpp"
@@ -94,25 +94,74 @@ public:
     }
 };
 
-class AdvEnemy : public GameObject {
+class SleepEnemy : public GameObject {
+private:
+    bool isSleeping;
+
 public:
-    AdvEnemy(float x, float y, std::weak_ptr<GameObject> player)
+    SleepEnemy(float x, float y, std::weak_ptr<GameObject> player)
         : GameObject(x, y, SIZE, SIZE, TAG_ENEMY)
     {
+        isSleeping = true;
+        mData = &isSleeping;
+
         std::shared_ptr<SleepAction> sleepAction = std::make_shared<SleepAction>(*this, 1000);
+        std::shared_ptr<Inverter> inverter = std::make_shared<Inverter>(sleepAction);
+
         std::shared_ptr<ChaseAction> chaseAction = std::make_shared<ChaseAction>(*this, 6.0f, player);
         std::shared_ptr<Sequence> chaseSequence = std::make_shared<Sequence>();
 
-        chaseSequence->addChild(sleepAction);
+        chaseSequence->addChild(inverter);
         chaseSequence->addChild(chaseAction);
 
         std::shared_ptr<BehaviorTree> bt = std::make_shared<BehaviorTree>(*this);
-        bt->setRoot(sleepAction);
+        bt->setRoot(chaseSequence);
         addGenericCompenent(bt);
 
-        // addGenericCompenent(std::make_shared<RemoveOnCollideComponent>(*this, TAG_PLAYER));
         setPhysicsCompenent(std::make_shared<PhysicsComponent>(*this, true));
         setRenderCompenent(std::make_shared<RectRenderComponent>(*this, 0xdd, 0x22, 0x22));
+    }
+};
+
+class RushEnemy : public GameObject {
+private:
+    bool isRunning;
+
+public:
+    RushEnemy(float x, float y)
+        : GameObject(x, y, SIZE, SIZE, TAG_ENEMY)
+    {
+        isRunning = false;
+        mData = &isRunning;
+        // behavior tree
+        std::shared_ptr<BehaviorTree> bt = std::make_shared<BehaviorTree>(*this);
+        addGenericCompenent(bt);
+
+        // first level of the tree (root)
+        std::shared_ptr<Sequence> rushSequence = std::make_shared<Sequence>();
+        bt->setRoot(rushSequence);
+
+        // second level of the tree
+        std::shared_ptr<Selector> rushSelector = std::make_shared<Selector>();
+        std::shared_ptr<RushAction> rushAction = std::make_shared<RushAction>(*this, 3 * 6.0f);
+        rushSequence->addChild(rushSelector);
+        rushSequence->addChild(rushAction);
+
+        // third level of the tree
+        std::shared_ptr<IsRushingCondition> isRushingCondition = std::make_shared<IsRushingCondition>(*this);
+        std::shared_ptr<Sequence> rushSequence1 = std::make_shared<Sequence>();
+        rushSelector->addChild(isRushingCondition);
+        rushSelector->addChild(rushSequence1);
+
+        // fourth level of the tree
+        std::shared_ptr<RushDetectNearbyAction> detectNearbyAction = std::make_shared<RushDetectNearbyAction>(*this, SIZE * 10.0f);
+        std::shared_ptr<RushWaitAction> waitAction = std::make_shared<RushWaitAction>(*this, 1000);
+        rushSequence1->addChild(detectNearbyAction);
+        rushSequence1->addChild(waitAction);
+
+        addGenericCompenent(std::make_shared<RemoveOnCollideComponent>(*this, TAG_PLAYER));
+        setPhysicsCompenent(std::make_shared<PhysicsComponent>(*this, false));
+        setRenderCompenent(std::make_shared<RectRenderComponent>(*this, 0x22, 0xdd, 0x22));
     }
 };
 
@@ -120,13 +169,17 @@ int main(int argc, char** argv)
 {
     std::shared_ptr<Level> level = std::make_shared<Level>(30 * SIZE, 30 * SIZE);
 
-    std::shared_ptr<AdvPlayer> player = std::make_shared<AdvPlayer>(2 * SIZE, 2 * SIZE);
+    std::shared_ptr<AdvPlayer> player = std::make_shared<AdvPlayer>(15 * SIZE, 15 * SIZE);
 
     Blackboard::getInstance()->setPlayer(player);
 
     level->addObject(player);
-    level->addObject(std::make_shared<AdvGoal>(18 * SIZE, 18 * SIZE));
-    level->addObject(std::make_shared<AdvEnemy>(2 * SIZE, 17 * SIZE, player));
+    // level->addObject(std::make_shared<AdvGoal>(18 * SIZE, 18 * SIZE));
+    // level->addObject(std::make_shared<SleepEnemy>(5 * SIZE, 25 * SIZE, player));
+    level->addObject(std::make_shared<RushEnemy>(5 * SIZE, 5 * SIZE));
+    level->addObject(std::make_shared<RushEnemy>(5 * SIZE, 25 * SIZE));
+    level->addObject(std::make_shared<RushEnemy>(25 * SIZE, 5 * SIZE));
+    level->addObject(std::make_shared<RushEnemy>(25 * SIZE, 25 * SIZE));
 
     SDLGraphicsProgram mySDLGraphicsProgram(level);
 

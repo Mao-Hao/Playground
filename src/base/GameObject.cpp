@@ -8,6 +8,7 @@ GameObject::GameObject(float x, float y, float w, float h, int tag)
     , mH(h)
     , mTag(tag)
 {
+    mData = nullptr;
 }
 
 GameObject::~GameObject()

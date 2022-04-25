@@ -48,7 +48,9 @@ public:
     bool isColliding(const GameObject& obj) const; //!< Determine if this object is colliding with another.
     bool isColliding(float px, float py) const; //!< Determine if this object is colliding with a point.
 
-    // private:
+    void* mData;
+
+private:
     GameObject(const GameObject&) = delete;
     void operator=(GameObject const&) = delete;
 
