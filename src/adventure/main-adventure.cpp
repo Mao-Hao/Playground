@@ -2,6 +2,7 @@
 // Updated by Seth Cooper
 // Please do not redistribute without asking permission.
 
+#include "AdvActions.hpp"
 #include "base/BehaviorTree.hpp"
 #include "base/GameObject.hpp"
 #include "base/GenericComponent.hpp"
@@ -99,31 +100,14 @@ public:
     AdvEnemy(float x, float y, std::weak_ptr<GameObject> player)
         : GameObject(x, y, SIZE, SIZE, TAG_ENEMY)
     {
-        std::shared_ptr<StateComponent::State> patrolState = std::make_shared<PatrolState>(2.0f, x, y, x, y - SIZE * 4.0f);
-        std::shared_ptr<StateComponent::State> chaseState = std::make_shared<ChaseState>(6.0f, player);
-        std::shared_ptr<StateComponent::State> returnState = std::make_shared<MoveState>(4.0f, x, y);
 
-        std::shared_ptr<StateComponent> sc = std::make_shared<StateComponent>(*this);
-        sc->setStartState(patrolState);
-        sc->addTransition(patrolState, chaseState, std::make_shared<ObjectProximityTransition>(player, SIZE * 5.0f));
-        sc->addTransition(returnState, chaseState, std::make_shared<ObjectProximityTransition>(player, SIZE * 3.0f));
-        sc->addTransition(chaseState, returnState, std::make_shared<TimedTransition>(60));
-        sc->addTransition(returnState, patrolState, std::make_shared<PointProximityTransition>(x, y, SIZE / 4.0f));
-        addGenericCompenent(sc);
+        std::shared_ptr<ChaseAction> chaseAction = std::make_shared<ChaseAction>(*this, 6.0f, player);
+        std::shared_ptr<Sequence> chaseSequence = std::make_shared<Sequence>();
 
-        addGenericCompenent(std::make_shared<RemoveOnCollideComponent>(*this, TAG_PLAYER));
-        setPhysicsCompenent(std::make_shared<PhysicsComponent>(*this, false));
-        setRenderCompenent(std::make_shared<RectRenderComponent>(*this, 0xdd, 0x22, 0x22));
-    }
-};
+        chaseSequence->addChild(chaseAction);
 
-class AdvTestEnemy : public GameObject {
-public:
-    AdvTestEnemy(float x, float y)
-        : GameObject(x, y, SIZE, SIZE, TAG_ENEMY)
-    {
         std::shared_ptr<BehaviorTree> bt = std::make_shared<BehaviorTree>(*this);
-
+        bt->setRoot(chaseSequence);
         addGenericCompenent(bt);
 
         addGenericCompenent(std::make_shared<RemoveOnCollideComponent>(*this, TAG_PLAYER));
@@ -140,7 +124,7 @@ int main(int argc, char** argv)
     level->addObject(player);
     level->addObject(std::make_shared<AdvGoal>(18 * SIZE, 18 * SIZE));
     level->addObject(std::make_shared<AdvEnemy>(2 * SIZE, 17 * SIZE, player));
-    level->addObject(std::make_shared<AdvTestEnemy>(2 * SIZE, 10 * SIZE));
+
     for (int ii = 0; ii < 10; ++ii) {
         level->addObject(std::make_shared<AdvBlock>((14 - ii) * SIZE, (ii + 5) * SIZE));
     }

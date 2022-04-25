@@ -4,6 +4,7 @@
 #include "base/GenericComponent.hpp"
 
 #include <memory>
+#include <stdlib.h>
 #include <vector>
 
 enum class Status {
@@ -114,6 +115,7 @@ public:
     void setLimit(int limit) { mLimit = limit; }
 };
 
+// FIXME:
 class RepeatUntilFailure : public Decorator {
 public:
     RepeatUntilFailure(std::shared_ptr<BehaviorNode> child)
@@ -146,7 +148,7 @@ public:
 
 // And
 class Sequence : public Composite {
-protected:
+public:
     std::vector<std::shared_ptr<BehaviorNode>>::iterator mCurrentChild;
 
     virtual void onEnter() override
