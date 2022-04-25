@@ -28,7 +28,7 @@ SDLGraphicsProgram::SDLGraphicsProgram(std::shared_ptr<Level> level)
         success = false;
     } else {
         // Create window
-        mWindow = SDL_CreateWindow("Lab", 100, 100, mLevel->w(), mLevel->h(), SDL_WINDOW_SHOWN);
+        mWindow = SDL_CreateWindow("AI_Playground", 100, 100, mLevel->w(), mLevel->h(), SDL_WINDOW_SHOWN);
 
         // Check if Window did not create.
         if (mWindow == nullptr) {

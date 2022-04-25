@@ -4,6 +4,8 @@
 #include "base/BehaviorTree.hpp"
 #include "base/GameObject.hpp"
 
+#include <iostream>
+
 static bool moveToward(GameObject& gameObject, float x, float y, float speed)
 {
     const float epsilon = 0.01;
@@ -36,6 +38,38 @@ static bool isNear(const GameObject& gameObject, float x, float y, float distanc
 
 //-----------------------------------------------------------------------------
 
+class SleepAction : public BehaviorNode {
+public:
+    SleepAction(GameObject& gameObject, Uint32 duration)
+        : self(gameObject)
+        , mDuration(duration)
+    {
+    }
+
+    virtual void onEnter() override
+    {
+        mStartTime = SDL_GetTicks();
+    }
+
+    virtual Status update() override
+    {
+        Uint32 currentTime = SDL_GetTicks();
+        Uint32 elapsedTime = currentTime - mStartTime;
+        if (elapsedTime >= mDuration) {
+            return Status::SUCCESS;
+        } else if (isNear(self, mBlackboard->getPlayerPtr()->x(), mBlackboard->getPlayerPtr()->y(), SIZE * 2.5f)) {
+            return Status::FAILURE;
+        } else {
+            return Status::RUNNING;
+        }
+    }
+
+private:
+    GameObject& self;
+    Uint32 mDuration;
+    Uint32 mStartTime;
+};
+
 class ChaseAction : public BehaviorNode {
 public:
     ChaseAction(GameObject& gameObject, float speed, std::weak_ptr<GameObject> which)
@@ -61,7 +95,5 @@ private:
     const float mSpeed;
     const std::weak_ptr<GameObject> mWhich;
 };
-
-
 
 #endif // __ADVENTURE_ADVACTIONS_HPP__

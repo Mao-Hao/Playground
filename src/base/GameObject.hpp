@@ -8,6 +8,8 @@
 #include <memory>
 #include <vector>
 
+const float SIZE = 30.0f;
+
 class Level;
 
 //! \brief Represents an object in the game.  Has some essential

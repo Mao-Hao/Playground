@@ -15,6 +15,7 @@
 #include "base/StateComponent.hpp"
 #include "base/StatesAndTransitions.hpp"
 
+#include <iostream>
 #include <memory>
 
 static const int TAG_PLAYER = 1;
@@ -61,8 +62,6 @@ private:
     float mSpeed;
 };
 
-const float SIZE = 40.0f;
-
 class AdvPlayer : public GameObject {
 public:
     AdvPlayer(float x, float y)
@@ -100,34 +99,34 @@ public:
     AdvEnemy(float x, float y, std::weak_ptr<GameObject> player)
         : GameObject(x, y, SIZE, SIZE, TAG_ENEMY)
     {
-
+        std::shared_ptr<SleepAction> sleepAction = std::make_shared<SleepAction>(*this, 1000);
         std::shared_ptr<ChaseAction> chaseAction = std::make_shared<ChaseAction>(*this, 6.0f, player);
         std::shared_ptr<Sequence> chaseSequence = std::make_shared<Sequence>();
 
+        chaseSequence->addChild(sleepAction);
         chaseSequence->addChild(chaseAction);
 
         std::shared_ptr<BehaviorTree> bt = std::make_shared<BehaviorTree>(*this);
-        bt->setRoot(chaseSequence);
+        bt->setRoot(sleepAction);
         addGenericCompenent(bt);
 
-        addGenericCompenent(std::make_shared<RemoveOnCollideComponent>(*this, TAG_PLAYER));
-        setPhysicsCompenent(std::make_shared<PhysicsComponent>(*this, false));
+        // addGenericCompenent(std::make_shared<RemoveOnCollideComponent>(*this, TAG_PLAYER));
+        setPhysicsCompenent(std::make_shared<PhysicsComponent>(*this, true));
         setRenderCompenent(std::make_shared<RectRenderComponent>(*this, 0xdd, 0x22, 0x22));
     }
 };
 
 int main(int argc, char** argv)
 {
-    std::shared_ptr<Level> level = std::make_shared<Level>(20 * SIZE, 20 * SIZE);
+    std::shared_ptr<Level> level = std::make_shared<Level>(30 * SIZE, 30 * SIZE);
 
     std::shared_ptr<AdvPlayer> player = std::make_shared<AdvPlayer>(2 * SIZE, 2 * SIZE);
+
+    Blackboard::getInstance()->setPlayer(player);
+
     level->addObject(player);
     level->addObject(std::make_shared<AdvGoal>(18 * SIZE, 18 * SIZE));
     level->addObject(std::make_shared<AdvEnemy>(2 * SIZE, 17 * SIZE, player));
-
-    for (int ii = 0; ii < 10; ++ii) {
-        level->addObject(std::make_shared<AdvBlock>((14 - ii) * SIZE, (ii + 5) * SIZE));
-    }
 
     SDLGraphicsProgram mySDLGraphicsProgram(level);
 

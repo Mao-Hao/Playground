@@ -28,7 +28,7 @@ LDFLAGS_BASE=
 ## the following should not need to change
 
 ## generic options
-CXXFLAGS_BASE:=$(CXXFLAGS_BASE) -std=c++17 -Wall -Werror -pedantic-errors -Iinclude -Isrc
+CXXFLAGS_BASE:=$(CXXFLAGS_BASE) -std=c++17 -Wall -pedantic-errors -Iinclude -Isrc
 LDFLAGS_BASE:=$(LDFLAGS_BASE) -std=c++17
 
 ## platform-specific options

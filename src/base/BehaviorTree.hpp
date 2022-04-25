@@ -7,6 +7,33 @@
 #include <stdlib.h>
 #include <vector>
 
+class Blackboard {
+private:
+    Blackboard() = default;
+    ~Blackboard() = default;
+    Blackboard(const Blackboard&) = delete;
+    void operator=(const Blackboard&) = delete;
+    Blackboard(Blackboard&&) = delete;
+    void operator=(Blackboard&&) = delete;
+
+public:
+    static Blackboard* getInstance()
+    {
+        static Blackboard* instance = new Blackboard();
+        return instance;
+    }
+
+    void setPlayer(std::shared_ptr<GameObject> player)
+    {
+        mPlayerPtr = player;
+    }
+
+    std::shared_ptr<GameObject> getPlayerPtr() const { return mPlayerPtr; }
+
+private:
+    std::shared_ptr<GameObject> mPlayerPtr = nullptr;
+};
+
 enum class Status {
     INVALID,
     SUCCESS,
@@ -23,6 +50,11 @@ public:
     virtual void onEnter() { }
     virtual void onExit() { }
 
+    BehaviorNode()
+        : mStatus(Status::INVALID)
+    {
+        mBlackboard = Blackboard::getInstance();
+    }
     virtual ~BehaviorNode() { }
 
     virtual Status update() = 0;
@@ -45,6 +77,8 @@ public:
     bool isRunning() const { return mStatus == Status::RUNNING; }
     bool isExit() const { return mStatus == Status::SUCCESS || mStatus == Status::FAILURE; }
     Status getStatus() const { return mStatus; }
+
+    Blackboard* mBlackboard;
 };
 
 // ActionNode: accessing information and making changes to the world
@@ -72,6 +106,7 @@ public:
 
     Status update() override
     {
+        mChild->tick();
         if (mChild->getStatus() == Status::SUCCESS)
             return Status::FAILURE;
         else if (mChild->getStatus() == Status::FAILURE)
