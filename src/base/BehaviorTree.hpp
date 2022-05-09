@@ -165,7 +165,6 @@ public:
     void setLimit(int limit) { mLimit = limit; }
 };
 
-// FIXME:
 class RepeatUntilFailure : public Decorator {
 public:
     RepeatUntilFailure(std::shared_ptr<BehaviorNode> child)

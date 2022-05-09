@@ -23,9 +23,9 @@ static const int TAG_GOAL = 2;
 static const int TAG_BLOCK = 3;
 static const int TAG_ENEMY = 4;
 
-class AdvInputComponent : public GenericComponent {
+class AvoidInputComponent : public GenericComponent {
 public:
-    AdvInputComponent(GameObject& gameObject, float speed)
+    AvoidInputComponent(GameObject& gameObject, float speed)
         : GenericComponent(gameObject)
         , mSpeed(speed)
     {
@@ -62,35 +62,25 @@ private:
     float mSpeed;
 };
 
-class AdvPlayer : public GameObject {
+class AvoidPlayer : public GameObject {
 public:
-    AdvPlayer(float x, float y)
+    AvoidPlayer(float x, float y)
         : GameObject(x, y, SIZE, SIZE, TAG_PLAYER)
     {
-        addGenericCompenent(std::make_shared<AdvInputComponent>(*this, 10.0f));
+        addGenericCompenent(std::make_shared<AvoidInputComponent>(*this, 10.0f));
         addGenericCompenent(std::make_shared<RemoveOnCollideComponent>(*this, TAG_GOAL));
         setPhysicsCompenent(std::make_shared<PhysicsComponent>(*this, false));
         setRenderCompenent(std::make_shared<RectRenderComponent>(*this, 0x00, 0xff, 0xaa));
     }
 };
 
-class AdvGoal : public GameObject {
+class AvoidGoal : public GameObject {
 public:
-    AdvGoal(float x, float y)
+    AvoidGoal(float x, float y)
         : GameObject(x, y, SIZE, SIZE, TAG_GOAL)
     {
         setPhysicsCompenent(std::make_shared<PhysicsComponent>(*this, false));
         setRenderCompenent(std::make_shared<RectRenderComponent>(*this, 0xff, 0xff, 0x00));
-    }
-};
-
-class AdvBlock : public GameObject {
-public:
-    AdvBlock(float x, float y)
-        : GameObject(x, y, SIZE, SIZE, TAG_BLOCK)
-    {
-        setPhysicsCompenent(std::make_shared<PhysicsComponent>(*this, true));
-        setRenderCompenent(std::make_shared<RectRenderComponent>(*this, 0x99, 0x99, 0x99));
     }
 };
 
@@ -169,20 +159,20 @@ int main(int argc, char** argv)
 {
     std::shared_ptr<Level> level = std::make_shared<Level>(30 * SIZE, 30 * SIZE);
 
-    std::shared_ptr<AdvPlayer> player = std::make_shared<AdvPlayer>(14 * SIZE, 14 * SIZE);
+    std::shared_ptr<AvoidPlayer> player = std::make_shared<AvoidPlayer>(14 * SIZE, 14 * SIZE);
 
     Blackboard::getInstance()->setPlayer(player);
 
     level->addObject(player);
-    level->addObject(std::make_shared<AdvGoal>(9 * SIZE, 9 * SIZE));
-    level->addObject(std::make_shared<AdvGoal>(9 * SIZE, 19 * SIZE));
-    level->addObject(std::make_shared<AdvGoal>(19 * SIZE, 19 * SIZE));
-    level->addObject(std::make_shared<AdvGoal>(19 * SIZE, 9 * SIZE));
+    level->addObject(std::make_shared<AvoidGoal>(9 * SIZE, 9 * SIZE));
+    level->addObject(std::make_shared<AvoidGoal>(9 * SIZE, 19 * SIZE));
+    level->addObject(std::make_shared<AvoidGoal>(19 * SIZE, 19 * SIZE));
+    level->addObject(std::make_shared<AvoidGoal>(19 * SIZE, 9 * SIZE));
 
-    level->addObject(std::make_shared<AdvGoal>(4 * SIZE, 14 * SIZE));
-    level->addObject(std::make_shared<AdvGoal>(14 * SIZE, 4 * SIZE));
-    level->addObject(std::make_shared<AdvGoal>(14 * SIZE, 24 * SIZE));
-    level->addObject(std::make_shared<AdvGoal>(24 * SIZE, 14 * SIZE));
+    level->addObject(std::make_shared<AvoidGoal>(4 * SIZE, 14 * SIZE));
+    level->addObject(std::make_shared<AvoidGoal>(14 * SIZE, 4 * SIZE));
+    level->addObject(std::make_shared<AvoidGoal>(14 * SIZE, 24 * SIZE));
+    level->addObject(std::make_shared<AvoidGoal>(24 * SIZE, 14 * SIZE));
 
     level->addObject(std::make_shared<RushEnemy>(4 * SIZE, 4 * SIZE));
     level->addObject(std::make_shared<RushEnemy>(4 * SIZE, 24 * SIZE));
